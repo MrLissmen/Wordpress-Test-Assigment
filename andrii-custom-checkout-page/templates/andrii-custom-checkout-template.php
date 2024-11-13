@@ -4,42 +4,61 @@ defined('ABSPATH') || exit;
 get_header();
 ?>
 
-<div class="custom-checkout-page" style="padding: 20px; max-width: 800px; margin: 0 auto;">
-    <h1 style="margin-bottom: 30px;">Placing an order</h1>
+<div class="custom-checkout-page">
+    <h1>Placing an order</h1>
     
-    <!-- Показ товарів з карзини -->
+    <!-- Показ товарів з корзини -->
     <?php if ( WC()->cart->is_empty() ) : ?>
         <p>Your cart is empty.</p>
     <?php else : ?>
-        <ul style="list-style: none;" class="checkout-cart">
-            <?php foreach ( WC()->cart->get_cart() as $cart_item ) : 
+        <ul class="checkout-cart">
+            <?php foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) : 
                 $product = $cart_item['data'];
+                $product_price = wc_price($product->get_price()); // Отримуємо ціну товару у форматі WooCommerce
+                $total_price = wc_price($cart_item['line_total']); // Загальна ціна за кількість одиниць товару
             ?>
-                <li class="checkout-image" style="margin-bottom: 30px;"><?php echo $product->get_image(); ?> - <?php echo $product->get_name(); ?> - <?php echo $cart_item['quantity']; ?> шт.</li>
+                <li class="checkout-item">
+                    <div 
+                    class="checkout-image"><?php echo $product->get_image(); ?>
+                    </div>
+                    <div class="checkout-details" >
+                        <span class="product-name"><span class="bold"><?php echo $product->get_name(); ?></span></span><br>
+                        <span class="product-quantity">Amount: <?php echo $cart_item['quantity']; ?> pcs.</span><br>
+                        <span class="product-price">Price per unit: <?php echo $product_price; ?></span><br>
+                        <span class="product-total-price">Total price: <?php echo $total_price; ?></span>
+                    </div>
+                </li>
             <?php endforeach; ?>
         </ul>
+
+        <!-- Загальна сума корзини -->
+        <div class="cart-total">
+            <p>Total order amount: <span class="bold"><?php echo WC()->cart->get_cart_total(); ?></span></p>
+        </div>
     <?php endif; ?>
 
     <!-- Форма оформлення замовлення -->
     <form id="custom-checkout-form" method="POST">
         <div><label for="name">First Name:</label>
-        <input type="text" id="name" name="name" required></div>
+        <input class="form-field" type="text" id="name" name="name" required></div>
         
         <div><label for="address">Address:</label>
-        <input type="text" id="address" name="address" required></div>
+        <input class="form-field" type="text" id="address" name="address" required></div>
         
         <div><label for="email">Email:</label>
-        <input type="email" id="email" name="email" required></div>
+        <input class="form-field" type="email" id="email" name="email" required></div>
         
         <div><label for="payment_method">Payment Method:</label>
-        <select id="payment_method" name="payment_method" required>
-            <option value="bacs">Bank transfer</option>
-            <option value="cod">Cash on delivery</option>
-            <option value="paypal">PayPal</option>
+        <select class="form-field" id="payment_method" name="payment_method" required>
+            <?php
+                $available_gateways = WC()->payment_gateways->get_available_payment_gateways();
+                foreach ( $available_gateways as $gateway ) {
+                    echo '<option value="' . esc_attr( $gateway->id ) . '">' . esc_html( $gateway->get_title() ) . '</option>';
+                }
+            ?>
         </select></div>
         
-
-        <button type="submit">Confirm order</button>
+        <button class="form-button" type="submit">Confirm order</button>
     </form>
 
     <div id="checkout-message"></div>
