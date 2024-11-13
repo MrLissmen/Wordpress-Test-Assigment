@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Andrii Custom Checkout Page
  * Description: A custom page for the Woocommerce plugin was created to complete a test task
- * Version: 1.0
+ * Version: 1.1
  * Author: Andrii
  */
 
@@ -19,6 +19,14 @@
         }
         return $template;
     }
+
+    // Кастомні стилі checkout сторінки
+    function custom_checkout_styles() {
+        if ( is_checkout() ) {  // Підключення стилів тільки на кастомній сторінці checkout
+            wp_enqueue_style( 'custom-checkout-styles', plugin_dir_url( __FILE__ ) . '/css/andrii-custom-checkout-styles.css' );
+        }
+    }
+    add_action( 'wp_enqueue_scripts', 'custom_checkout_styles' );
 
     // JavaScript для функціоналу збереження даних
     function my_custom_checkout_scripts() {
